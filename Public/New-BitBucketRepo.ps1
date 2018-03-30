@@ -11,7 +11,7 @@ Note: all below command work if -WithGitFlowBranch is passed to True.
 .PARAMETER WithGitFlowBranch
     Optional - Switch if repo to have develop/master branch with GitIgnore file - Default set to false
 .PARAMETER GitIgnoreFileLoc
-    Optional - if WithGitFlowBranch is set to true, then make sure you have a git ignore file at C:\Temp\.gitignore or 
+    Optional - if WithGitFlowBranch is set to true, then make sure you have a git ignore file at C:\Temp\.gitignore or
     pass the different location with -GitIgnoreFileLoc
 .PARAMETER ForkEnabled
     Optional - This is to set repository with fork enabled (true/false). default set to false
@@ -22,7 +22,7 @@ Note: all below command work if -WithGitFlowBranch is passed to True.
     to change the permission level/pattern/branch, have your own json file with permission leverl set similar to one available at Public\BranchPermission.json
     Pass the json file path with param -BranchPermissionJson <FileName>
 .PARAMETER BranchPermissionJson
-    Optional - BranchPermissionJson custom file path         
+    Optional - BranchPermissionJson custom file path
 .EXAMPLE
     New-BitBucketRepo -Project "TES" -Repository "ABC"
 #>
@@ -31,37 +31,66 @@ function New-BitBucketRepo {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]$Project,
+
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]$Repository,
+
         [Parameter(Mandatory=$false)]
         [switch]$WithGitFlowBranch = $false,
+
         [Parameter(Mandatory=$false)]
-        [string]$GitIgnoreFileLoc= "C:\Temp\.gitignore",
+        [string]$GitIgnoreFileLoc= "$Script:ModuleBase\Private\.gitignore",
+
         [Parameter(Mandatory=$false)]
         [string]$RepoLocalPath= "C:\Git",
+
+        [switch]$PushExisting,
+
         [Parameter(Mandatory=$false)]
-        [string]$ForkEnabled= "false",
+        [switch]$ForkEnabled,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$UseHTTP = $Script:UseHttp,
+
         [Parameter(Mandatory=$false)]
         [switch]$SetDefaultBranch= $false,
+
         [Parameter(Mandatory=$false)]
         [switch]$SetBranchPermission= $false,
+
         [Parameter(Mandatory=$false)]
-        [string]$BranchPermissionJson = "$PSScriptRoot\BranchPermission.Json"
+        [string]$BranchPermissionJson = "$Script:ModuleBase\Private\BranchPermission.Json",
+
+        [switch]$Force
     )
     try
     {
+        if ($ForkEnabled) {
+            $GetForked = 'true'
+        } else {
+            $GetForked = 'false'
+        }
         # Check if .gitignore file exist
         if ($WithGitFlowBranch)
         {
             if ([string]::IsNullOrEmpty($script:UserFullName))
             {
-                Write-Output "[Error:] Username wasnt set, use Set-UserFullNameAndEmail cmdlet to set it"
-                Break;
+                if (git config user.name) {
+                    $Script:UserFullName = git config user.name
+                } else {
+                    Write-Output "[Error:] Username wasnt set, use Set-UserFullNameAndEmail cmdlet to set it"
+                    Break;
+                }
             }
             if ([string]::IsNullOrEmpty($script:UserEmailAddress))
             {
-                Break;
+                if (git config user.email) {
+                    $Script:UserEmailAddress = git config user.email
+                } else {
+                    Write-Output "[Error:] Email wasnt set, use Set-UserFullNameAndEmail cmdlet to set it"
+                    Break;
+                }
             }
             if (Test-Path $GitIgnoreFileLoc)
             {
@@ -75,46 +104,54 @@ function New-BitBucketRepo {
         }
         if (-Not (Test-Path $RepoLocalPath))
         {
-            New-Item $RepoLocalPath -Type Directory
+            New-Item $RepoLocalPath -Type Directory -Force:$Force
         }
         if (-Not (Test-Path $RepoLocalPath\$Repository))
         {
-            New-Item $RepoLocalPath\$Repository -Type Directory
-        }        
+            New-Item $RepoLocalPath\$Repository -Type Directory -Force:$Force
+        }
 
         $JsonBody = @{
-            name        = $Repository 
+            name        = $Repository
             scmId       = 'git'
-            forkable    = $ForkEnabled
+            forkable    = $GetForked
         } | ConvertTo-Json
 
         $Manifest = Invoke-BitBucketWebRequest -Resource "projects/$Project/repos" -Method Post -Body $JsonBody #| ConvertFrom-Json
-        $Manifest1 = $Manifest | ConvertFrom-Json
-        #$Status = $Manifest1.State
-        if ($Manifest1.State -eq "AVAILABLE")
+        $Results = $Manifest | ConvertFrom-Json
+        #$Status = $Results.State
+        if ($Results.State -eq "AVAILABLE")
         {
-            Write-Output "[Creation][Successful] URL: $script:BitBucketServer/projects/${Project}/repos/${Repository}/browse"
+            $RepoSlug = $Results.slug
+            Write-Output "[Creation][Successful] URL: $script:BitBucketServer/projects/${Project}/repos/${RepoSlug}/browse"
             if (($WithGitFlowBranch) -and (Test-Path $GitIgnoreFileLoc))
             {
                 Set-Location $RepoLocalPath\$Repository
                 Copy-Item $GitIgnoreFileLoc .
-                git config --global user.name "$script:UserFullName"
-                git config --global user.email "$script:UserEmailAddress"
+                #git config --global user.name "$script:UserFullName"
+                #git config --global user.email "$script:UserEmailAddress"
                 git init
                 git add .gitignore
                 git commit -m "Add .gitignore file"
-                git remote add origin $script:BitBucketServer/scm/$Project/$Repository.git
-                git config credential.helper store
+                if ($UseHTTP) {
+                    $CloneURL = ($Results.links.clone | Where-Object {$_.Name -eq 'http'}).href
+                } else {
+                    $CloneURL = ($Results.links.clone | Where-Object {$_.Name -eq 'ssh'}).href
+                }
+                git remote add origin $CloneURL
+                if (!(git config --global credential.helper)) {
+                    git config credential.helper store
+                }
                 git branch develop
                 git push -u origin --all
 
                 if ($SetDefaultBranch)
                 {
-                    Set-DefaultBranch -Project "$Project" -Repository "$Repository"
+                    Set-DefaultBranch -Project "$Project" -Repository "$RepoSlug"
                 }
                 if ($SetBranchPermission)
                 {
-                    Set-BranchPermission -Project "$Project" -Repository "$Repository" -BranchPermissionJson "$BranchPermissionJson"
+                    Set-BranchPermission -Project "$Project" -Repository "$RepoSlug" -BranchPermissionJson "$BranchPermissionJson"
                 }
             }
             else{
@@ -125,7 +162,7 @@ function New-BitBucketRepo {
             Write-Output "[Creation][Failed]"
         }
     }
-    catch [System.Exception] 
+    catch [System.Exception]
     {
         Write-Output "[Return Message:] $Manifest"
         Throw $_.Exception.Message;

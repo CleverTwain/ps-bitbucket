@@ -15,4 +15,6 @@ function Set-BitBucketServer {
         [string]$Url
     )
     $script:BitBucketServer = $Url
+
+    Set-ModuleVariable -VariableName 'BitBucketServer' -Value $Url
 }
