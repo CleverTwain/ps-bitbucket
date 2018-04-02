@@ -19,8 +19,7 @@ Foreach ($File in @($Public + $Private))
 
 $Script:ModuleBase = $PSScriptRoot
 
-Write-Verbose 'Getting module-wide variables'
-Get-ModuleVariable -All -Verbose:$Verbose
+Get-ModuleVariable -All
 
 
 Export-ModuleMember -Function $($Public | Select-Object -ExpandProperty BaseName)

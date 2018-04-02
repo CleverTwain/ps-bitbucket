@@ -119,7 +119,11 @@ Function Get-BitBucketProject
         Write-Verbose "[$((Get-Date).TimeofDay) END    ] Ending $($MyInvocation.MyCommand)"
 
         foreach ($Item in $Result) {
-            $Link = $Item.Links.Self.Href
+
+            $Links = [pscustomobject]@{
+                PSTypeName = 'PS.BitBucketSelfLink'
+                Self = $Item.Links.Self.Href
+            }
 
             [pscustomobject]@{
                 PSTypeName = 'PS.BitBucketProject'
@@ -129,7 +133,7 @@ Function Get-BitBucketProject
                 Description = $Item.Description
                 Public = $Item.Public
                 Type = $Item.Type
-                Link = $Link
+                Links = $Links
             }
         }
 

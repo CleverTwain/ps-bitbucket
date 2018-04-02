@@ -40,7 +40,7 @@ function Invoke-BitBucketWebRequest {
         [psobject]$Body
     )
     [string]$ResourceUrl="$APIUrl/$ApiVersion/$Resource"
-    #write-host "[Info:] URI: $ResourceUrl, Method: $Method, AuthToken: $AuthenticationToken"
+    # write-verbose "[Info:] URI: $ResourceUrl, Method: $Method, AuthToken: $AuthenticationToken"
     $Headers.Authorization = "Basic $AuthenticationToken"
     $WebRequestResponse = $null
 

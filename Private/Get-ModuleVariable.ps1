@@ -24,8 +24,8 @@ Function Get-ModuleVariable
         #   the script scope, but I didn't test that much.
         if (Test-Path -Path $Path) {
             $VariablesInCSV = Import-Csv -Path $Path
+            Write-Debug "Parsing variables in $Path"
             foreach ($Item in $VariablesInCSV) {
-                Write-Verbose "Parsing variables in $Path"
 
                 # Remove the variable if it exists, to prevent re-creating globally scoped variables
                 if (Get-Variable -Name ExpandedValue -ErrorAction SilentlyContinue) {
@@ -46,13 +46,13 @@ Function Get-ModuleVariable
                 }
 
                 if (! (Get-Variable -Name $Item.VariableName -ErrorAction SilentlyContinue) ) {
-                    Write-Verbose "Creating variable"
+                    Write-Debug "Creating variable"
                     New-Variable -Name $Item.VariableName -Value $ExpandedValue -Scope $Scope
                 }
             }
 
             if ($VariableName) {
-                Write-Verbose "Found $VariableName"
+                Write-Debug "Found $VariableName"
                 Get-Variable -Name $VariableName
             }
 

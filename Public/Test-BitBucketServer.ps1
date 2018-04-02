@@ -1,10 +1,12 @@
 <#
 .SYNOPSIS
-    Returns the currently used BitBucket Server URL.
+    Tests access to the api on the BitBucket server.
 .DESCRIPTION
-    This cmdlet is a simple getter function for Set-BitBucketServer cmdlet.
+    This command is used to verify access to the API on the BitBucket server
 .EXAMPLE
     Test-BitBucketServer
+.EXAMPLE
+    Test-BitBucketServer -Url http://localhost:7990
 #>
 function Test-BitBucketServer {
     param(

@@ -31,16 +31,16 @@ Function Set-ModuleVariable
             # Get a list of all the variables already in the CSV
             $ExistingVariables = Import-Csv -Path $Path
         } else {
-            Write-Verbose 'Variable file not found'
+            Write-Debug 'Variable file not found'
         }
 
         # Check if the variable already exists
         if ($ExistingVariables | Where-Object {$_.VariableName -eq $VariableName}) {
-            Write-Verbose "Updating existing variable"
+            Write-Debug "Updating existing variable"
             ($ExistingVariables | Where-Object {$_.VariableName -eq $VariableName}).Value = $Value
             ($ExistingVariables | Where-Object {$_.VariableName -eq $VariableName}).Scope = $Scope
         } else {
-            Write-Verbose "Creating new variable:"
+            Write-Debug "Creating new variable:"
             Write-Verbose "$VariableName"
             Write-Verbose "$Value"
             Write-Verbose "$Scope"
@@ -55,7 +55,7 @@ Function Set-ModuleVariable
 
         Try {
             $ExistingVariables | ConvertTo-Csv -NoTypeInformation | Out-File -FilePath $Path -Force:$Force -ErrorAction Stop
-            Write-Verbose "Trying to update value of $VariableName in memory"
+            Write-Debug "Trying to update value of $VariableName in memory"
             Set-Variable -Name $VariableName -Value $Value -Scope $Scope -Verbose:$Verbose
         } Catch {
             $_
