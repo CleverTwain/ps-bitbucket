@@ -7,6 +7,10 @@
     Get-BitBucketServer
 #>
 function Get-BitBucketServer {
-    $ServerURL = $script:BitBucketServer
-    write-output "[BitBucket Host:] $ServerURL"
+
+    if ($Script:BitBucketServer) {
+        $Script:BitBucketServer
+    } else {
+        Write-Warning "BitBucket server not found. Configure via Set-BitBucketServer"
+    }
 }

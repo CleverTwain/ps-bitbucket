@@ -40,7 +40,7 @@ function New-BitBucketRepo {
         [switch]$WithGitFlowBranch = $false,
 
         [Parameter(Mandatory=$false)]
-        [string]$GitIgnoreFileLoc= "$Script:ModuleBase\Private\.gitignore",
+        [string]$GitIgnoreFileLoc= "$Script:ModuleBase\lib\.gitignore",
 
         [Parameter(Mandatory=$false)]
         [string]$RepoLocalPath= "C:\Git",
@@ -60,7 +60,7 @@ function New-BitBucketRepo {
         [switch]$SetBranchPermission= $false,
 
         [Parameter(Mandatory=$false)]
-        [string]$BranchPermissionJson = "$Script:ModuleBase\Private\BranchPermission.Json",
+        [string]$BranchPermissionJson = "$Script:ModuleBase\lib\BranchPermission.Json",
 
         [switch]$Force
     )
@@ -117,9 +117,9 @@ function New-BitBucketRepo {
             forkable    = $GetForked
         } | ConvertTo-Json
 
-        $Manifest = Invoke-BitBucketWebRequest -Resource "projects/$Project/repos" -Method Post -Body $JsonBody #| ConvertFrom-Json
+        $Manifest = Invoke-BitBucketWebRequest -Resource "projects/$Project/repos" -Method Post -Body $JsonBody
         $Results = $Manifest | ConvertFrom-Json
-        #$Status = $Results.State
+
         if ($Results.State -eq "AVAILABLE")
         {
             $RepoSlug = $Results.slug
@@ -128,8 +128,6 @@ function New-BitBucketRepo {
             {
                 Set-Location $RepoLocalPath\$Repository
                 Copy-Item $GitIgnoreFileLoc .
-                #git config --global user.name "$script:UserFullName"
-                #git config --global user.email "$script:UserEmailAddress"
                 git init
                 git add .gitignore
                 git commit -m "Add .gitignore file"
@@ -140,7 +138,7 @@ function New-BitBucketRepo {
                 }
                 git remote add origin $CloneURL
                 if (!(git config --global credential.helper)) {
-                    git config credential.helper store
+                    git config credential.helper $Script:DefaultCredentialHelper
                 }
                 git branch develop
                 git push -u origin --all
@@ -153,9 +151,6 @@ function New-BitBucketRepo {
                 {
                     Set-BranchPermission -Project "$Project" -Repository "$RepoSlug" -BranchPermissionJson "$BranchPermissionJson"
                 }
-            }
-            else{
-                #Write-Output "[Creation][Successful]"
             }
         }
         else {
