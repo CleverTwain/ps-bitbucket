@@ -2,3 +2,4 @@
 "ModuleName","PS.BitBucket","Script"
 "BitBucketServer","http://localhost:7990","Script"
 "UseHTTP","true","Script"
+"AnotherVariable","Its value","Script"
