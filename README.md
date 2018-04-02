@@ -1,6 +1,6 @@
-# Powershell BitBucket module
-
+Powershell BitBucket module
 ==========================
+
 PS.BitBucket is a PowerShell module that provides cmdlets to intract with BitBucket instance. It uses most of the REST API reference availabe here [REST API][bitbucketAPI]   and few from other places like [Branch permission][branchpermission].
 
 This allows fast access to [BitBucket][BitBucket] UI functions in automated way.
