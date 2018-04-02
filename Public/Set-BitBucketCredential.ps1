@@ -16,7 +16,9 @@ function Set-BitBucketCredential {
         [Parameter(Mandatory=$true,ParameterSetName='ByCredential')]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
-        $Credential
+        $Credential,
+
+        [switch]$Save
     )
     # Get UserName and Password from Credential
     $UserName=$Credential.UserName
@@ -28,4 +30,9 @@ function Set-BitBucketCredential {
     }
     $script:UserName=$UserName
     $script:AuthenticationToken=[Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $UserName,$Password)))
+
+    if ($Save) {
+        Write-Warning "Saving the credential will keep it in a format that can be decoded. This should only be used for testing purposes"
+        Set-ModuleVariable -VariableName 'AuthenticationToken' -Value $script:AuthenticationToken
+    }
 }

@@ -55,6 +55,8 @@ Function Set-ModuleVariable
 
         Try {
             $ExistingVariables | ConvertTo-Csv -NoTypeInformation | Out-File -FilePath $Path -Force:$Force -ErrorAction Stop
+            Write-Verbose "Trying to update value of $VariableName in memory"
+            Set-Variable -Name $VariableName -Value $Value -Scope $Scope -Verbose:$Verbose
         } Catch {
             $_
         }

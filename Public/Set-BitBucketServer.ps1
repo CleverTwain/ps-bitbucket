@@ -15,12 +15,15 @@ function Set-BitBucketServer {
             HelpMessage="Fully qualified HTTP endpoint for the target BitBucket Server. http://localhost:7990"
             )]
         [ValidatePattern('^(https?:\/\/)([\w\.-]+)(:\d+)*\/*')]
-        [string]$Url
+        [string]$Url,
+
+        [switch]$Force
     )
 
     Write-Verbose "Setting BitBucket server to $Url"
-    if ( (Test-BitBucketServer -Url $Url).StatusCode -eq 200 ) {
-        $script:BitBucketServer = $Url
+    if ($Force) {
+        Set-ModuleVariable -VariableName 'BitBucketServer' -Value $Url
+    } elseif ( (Test-BitBucketServer -Url $Url).StatusCode -eq 200) {
         Set-ModuleVariable -VariableName 'BitBucketServer' -Value $Url
     }
 }

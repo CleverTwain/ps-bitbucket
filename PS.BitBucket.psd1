@@ -9,7 +9,7 @@
 
     # ID used to uniquely identify this module
     GUID                  = '9f735f6c-b57e-416f-8637-fdee31ef6759'
-  
+
     # Author of this module
     Author                = 'i9shankar'
 
@@ -50,10 +50,10 @@
     # ScriptsToProcess = @()
 
     # Type files (.ps1xml) to be loaded when importing this module
-    # TypesToProcess = @()
+    # TypesToProcess = @('PS.BitBucket.ps1xml')
 
     # Format files (.ps1xml) to be loaded when importing this module
-    # FormatsToProcess = @()
+    FormatsToProcess = @('PS.BitBucket.Format.ps1xml')
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     # NestedModules = @()

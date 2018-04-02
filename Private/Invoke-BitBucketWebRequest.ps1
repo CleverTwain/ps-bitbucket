@@ -33,7 +33,7 @@ function Invoke-BitBucketWebRequest {
         [string]$Server = $script:BitBucketServer,
         [string]$APIUrl="$Server/rest/api",
         [string]$BranchApiVersion='2.0',
-        [string]$BranchPermissionApiUri="$Server/rest/branch-permissions/$BranchApiVersion/$Resource",        
+        [string]$BranchPermissionApiUri="$Server/rest/branch-permissions/$BranchApiVersion/$Resource",
         [string]$AuthenticationToken = $script:AuthenticationToken,
         [string]$ContentType='application/json',
         [psobject]$Headers=@{},
@@ -65,6 +65,6 @@ function Invoke-BitBucketWebRequest {
             Write-Error $_
         }
     }
-    #Write-Verbose "Response: $WebRequestResponse"
+    Write-Verbose "Response: $WebRequestResponse"
     return $WebRequestResponse
 }

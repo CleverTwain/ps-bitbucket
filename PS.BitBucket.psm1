@@ -20,12 +20,7 @@ Foreach ($File in @($Public + $Private))
 $Script:ModuleBase = $PSScriptRoot
 
 Write-Verbose 'Getting module-wide variables'
-Get-ModuleVariable -Verbose
-
-Write-Verbose 'Setting a module variable'
-Set-ModuleVariable -VariableName 'Last Load' -Value (Get-Date) -Verbose
-
-Get-ModuleVariable -All -Verbose
+Get-ModuleVariable -All -Verbose:$Verbose
 
 
 Export-ModuleMember -Function $($Public | Select-Object -ExpandProperty BaseName)
